@@ -15,7 +15,7 @@ async def test_bank(async_page):
     await async_page.locator("#customer\\.address\\.zipCode").fill("560012")
     await async_page.locator("#customer\\.phoneNumber").fill("7306630913")
     await async_page.locator("#customer\\.ssn").fill("12345678")
-    await async_page.locator("#customer\\.username").fill("Jitheesh113")
+    await async_page.locator("#customer\\.username").fill("Jitheesh117")
     await async_page.locator("#customer\\.password").fill("22558899")
     await async_page.locator("#repeatedPassword").fill("22558899")
 
@@ -42,7 +42,7 @@ async def test_open_new_account(async_page):
     # Login to ParaBank
     await async_page.goto( "https://parabank.parasoft.com/parabank/index.htm")
 
-    await async_page.locator("//input[@name='username']").fill("Jitheesh113")
+    await async_page.locator("//input[@name='username']").fill("Jitheesh117")
 
     await async_page.locator("//input[@name='password']").fill("22558899")
 
@@ -62,3 +62,129 @@ async def test_open_new_account(async_page):
 
     # Verify account is successfully created
     await expect(async_page.locator("//h1[text()='Account Opened!']")).to_be_visible()
+
+#3  Transfer Funds & Verify Transaction
+
+# 3. Transfer Funds & Verify Transaction
+
+@pytest.mark.asyncio
+async def test_refund(async_page):
+    # Login to ParaBank
+    await async_page.goto(
+        "https://parabank.parasoft.com/parabank/index.htm"
+    )
+
+    await async_page.locator(
+        "//input[@name='username']"
+    ).fill("Jitheesh117")
+
+    await async_page.locator(
+        "//input[@name='password']"
+    ).fill("22558899")
+
+    await async_page.locator(
+        "//input[@value='Log In']"
+    ).click()
+
+    # Navigate to Accounts Overview
+    await async_page.locator(
+        "//a[normalize-space()='Accounts Overview']"
+    ).click()
+
+    # Retrieve all account numbers
+    account_locator = async_page.locator(
+        "#accountTable tbody tr td:first-child a"
+    )
+
+    await account_locator.first.wait_for(state="visible")
+
+    all_accounts = await account_locator.all_text_contents()
+
+    all_accounts = [
+        account.strip()
+        for account in all_accounts
+        if account.strip()
+    ]
+
+    print("All account numbers:", all_accounts)
+
+    # Verify at least two accounts are available
+    assert len(all_accounts) >= 2, (
+        f"At least two accounts are required. Found: {all_accounts}"
+    )
+
+    # Select accounts dynamically
+    account1 = all_accounts[0]
+    account2 = all_accounts[1]
+
+    print("From Account:", account1)
+    print("To Account:", account2)
+
+    # Navigate to Transfer Funds
+    await async_page.locator(
+        "//a[normalize-space()='Transfer Funds']"
+    ).click()
+
+    # Enter transfer amount
+    transfer_amount = "50"
+
+    await async_page.locator("#amount").fill(transfer_amount)
+
+    # Select the accounts retrieved from Accounts Overview
+    await async_page.locator("#fromAccountId").select_option(
+        label=account1
+    )
+
+    await async_page.locator("#toAccountId").select_option(
+        label=account2
+    )
+
+    # Submit the transfer
+    await async_page.locator(
+        "//input[@value='Transfer']"
+    ).click()
+
+    # Verify the transfer result
+    result = async_page.locator("#showResult")
+    await result.wait_for(state="visible")
+
+    title_text = (
+        await async_page.locator("#showResult h1").inner_text()
+    )
+
+    amount_result = (
+        await async_page.locator("#amountResult").inner_text()
+    )
+
+    from_acc = (
+        await async_page.locator("#fromAccountIdResult").inner_text()
+    )
+
+    to_acc = (
+        await async_page.locator("#toAccountIdResult").inner_text()
+    )
+
+    print("Status:", title_text)
+    print("Amount Transferred:", amount_result)
+    print("From Account:", from_acc)
+    print("To Account:", to_acc)
+
+    # Assertions
+    assert "complete" in title_text.lower(), (
+        f"Transfer was not completed: {title_text}"
+    )
+
+    assert transfer_amount in amount_result, (
+        f"Expected transfer amount {transfer_amount}, "
+        f"but received {amount_result}"
+    )
+
+    assert account1 in from_acc, (
+        f"Incorrect source account: {from_acc}"
+    )
+
+    assert account2 in to_acc, (
+        f"Incorrect destination account: {to_acc}"
+    )
+
+    print("Transfer verification passed!")
