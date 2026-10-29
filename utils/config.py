@@ -1,9 +1,48 @@
-import os
-from dotenv import load_dotenv
+ # import pytest
+# from playwright.async_api import async_playwright
+# import pytest_asyncio
 
-load_dotenv()
-env = os.getenv("test_env", "qa")
-load_dotenv(f".env.{env}")
-BASE_URL = os.getenv("BASE_URL")
-USERNAME = os.getenv("USERNAME")
-PASSWORD = os.getenv("PASSWORD")
+# @pytest_asyncio.fixture
+# async def async_page():
+#     async with async_playwright() as p:
+#         browser = await p.chromium.launch(headless =True)
+#         page = await browser.new_page()
+#         yield  page
+#         await browser.close()
+
+# @pytest_asyncio.fixture
+# async def chromium_page():
+#     async with async_playwright() as p:
+#         browser = await p.chromium.launch(
+#             headless=False
+#         )
+#         context = await browser.new_context()
+
+#         pag = await context.new_page()
+
+
+import pytest_asyncio
+from playwright.async_api import async_playwright
+
+
+@pytest_asyncio.fixture
+async def async_page():
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=False)
+        page = await browser.new_page()
+
+        yield page
+
+        await browser.close()
+
+
+@pytest_asyncio.fixture
+async def chromium_page():
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=False)
+        context = await browser.new_context()
+        page = await context.new_page()
+
+        yield page
+
+        await browser.close()

@@ -1,0 +1,32 @@
+2026-10-26 16:51:25,217 - INFO - ========== TEST EXECUTION STARTED ==========
+2026-10-26 16:51:25,772 - INFO - Launching browser: Chromium
+2026-10-26 16:51:25,773 - INFO - Opening Demo Web Shop
+2026-10-26 16:51:28,207 - INFO - Page title: Demo Web Shop
+2026-10-26 16:51:31,993 - ERROR - TEST RESULT: FAILED
+Traceback (most recent call last):
+  File "C:\Users\User\Desktop\Playwright_project\Logger_file\log_error.py", line 75, in test_main
+    await search_box.fill("book")
+  File "C:\Users\User\Desktop\Playwright_project\.venv\Lib\site-packages\playwright\async_api\_generated.py", line 18248, in fill
+    await self._impl_obj.fill(
+    ...<4 lines>...
+    )
+  File "C:\Users\User\Desktop\Playwright_project\.venv\Lib\site-packages\playwright\_impl\_locator.py", line 219, in fill
+    return await self._frame.fill(self._selector, strict=True, **params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\User\Desktop\Playwright_project\.venv\Lib\site-packages\playwright\_impl\_frame.py", line 636, in fill
+    await self._fill(**locals_to_params(locals()))
+  File "C:\Users\User\Desktop\Playwright_project\.venv\Lib\site-packages\playwright\_impl\_frame.py", line 648, in _fill
+    await self._channel.send("fill", self._timeout, locals_to_params(locals()))
+  File "C:\Users\User\Desktop\Playwright_project\.venv\Lib\site-packages\playwright\_impl\_connection.py", line 76, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\User\Desktop\Playwright_project\.venv\Lib\site-packages\playwright\_impl\_connection.py", line 632, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.TargetClosedError: Locator.fill: Target page, context or browser has been closed
+Call log:
+  - waiting for get_by_role("textbox", name="Search store")
+
+2026-10-26 16:51:31,995 - INFO - ========== TEST EXECUTION FINISHED ==========
