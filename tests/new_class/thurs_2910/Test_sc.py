@@ -243,3 +243,62 @@ async def test_lighthousejson():
         pytest.fail("Lighthouse timed out after 180 seconds")
         
 
+from pytest_check import check
+
+@pytest.mark.asyncio
+async def test_sanity_dom_check():
+    url = "https://demowebshop.tricentis.com/"
+    async with (async_playwright() as p):
+        browser = await p.chromium.launch(headless=False)
+        page = await browser.new_page()
+        await page.goto(url)
+        title =await page.title()
+        print("title is not missing") if bool(title.strip()) else print("title is missing") #  bool("") False bool("sddd") true
+        check.is_true(bool(title.strip()),"title is missing") # stop
+
+        # alt :-->
+        missing_alt = await page.locator("img:not([alt])").count()
+        print(missing_alt)
+        check.equal(missing_alt,0,f"{missing_alt} num of img missing alt attribute")
+
+        main_count = await page.locator("main").count()
+        print(main_count)
+        check.equal(main_count>1, f"{main_count} main land landmarks missing")
+
+        # load axe-core js
+        axe_path = Path("node_modules/axe-core/axe.min.js")
+        check.is_true(
+            axe_path.exists(),
+            "Install axe-core using npm"
+        )
+        # stop the accessiblity
+        if not axe_path.exists():
+            return
+        await page.add_script_tag(path=str(axe_path))
+
+        # run axe-core accessablity scan
+        resu = await page.evaluate(
+            """
+            async ()=> {
+              return await axe.run(document);
+            }
+            """
+        )
+        violations = resu["violations"]
+
+        for i in violations:
+            print(
+                f"Rule : {i['id']} "
+                f"Impact :  {i['impact']}"
+                f"Description:{i['description']}"
+            )
+
+            for j in i["nodes"]:
+                print("ele affected : {j['target']}")
+                print("Details: {j['failureSummary']}" )
+
+        check.equal(
+            len(violations),0,f"Accessibility violations : {len(violations)}"
+        )
+
+    await browser.close()
